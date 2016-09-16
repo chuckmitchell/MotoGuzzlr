@@ -25,17 +25,12 @@ public class MainActivity extends AppCompatActivity {
     TextView avgTextView, changeTextView;
     private FillupArrayAdapter mListAdapter;
 
-    public void setAverageFuelConsumption(BigDecimal fuelConsumption) {
-        avgTextView.setText(fuelConsumption + "");
-    }
-
-    public void setFuelConsumptionChange(String fuelConsumption) {
-        changeTextView.setText(fuelConsumption);
-    }
-
     private void setupViews() {
+        final Context context = this;
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
@@ -45,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
         avgTextView = (TextView) findViewById(R.id.avgTextView);
         changeTextView = (TextView) findViewById(R.id.changeTextView);
 
-        final Context context = this;
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void openSettingsMenu(MenuItem item) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        SettingsDialogFragment frag = new SettingsDialogFragment();
+        frag.setContext(this);
+        frag.show(ft, "txn_tag");
     }
 
     private void notifyDataSetChanged() {
