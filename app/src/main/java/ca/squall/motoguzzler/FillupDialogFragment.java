@@ -100,6 +100,7 @@ public class FillupDialogFragment extends DialogFragment implements View.OnClick
         deleteButton = (ImageView) root.findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(this);
 
+        String unitsPreference = ((MainActivity) context).getUnitPreference();
 
         return root;
     }
@@ -118,15 +119,22 @@ public class FillupDialogFragment extends DialogFragment implements View.OnClick
             try {
                 BigDecimal cost = new BigDecimal(costEditText.getText().toString());
                 BigDecimal amount = new BigDecimal(amountEditText.getText().toString());
-                int km = Integer.parseInt(kmEditText.getText().toString());
+                int distance = Integer.parseInt(kmEditText.getText().toString());
 
-                Fillup newFillup = new Fillup(km, amount, cost);
+                String unitPreference = ((MainActivity) context).getUnitPreference();
+
+                if (unitPreference.equals("Imperial")) {
+                    amount = UnitConverter.revert(amount, UnitConverter.UNIT_G);
+                    distance = UnitConverter.revert(new BigDecimal(distance), UnitConverter.UNIT_M).intValue();
+                }
+
+                Fillup newFillup = new Fillup(distance, amount, cost);
 
                 if (fillup != null) {
                     newFillup = fillup;
                     newFillup.setCost(cost);
                     newFillup.setAmount(amount);
-                    newFillup.setOdometer(km);
+                    newFillup.setOdometer(distance);
                 }
 
                 newFillup.save();
