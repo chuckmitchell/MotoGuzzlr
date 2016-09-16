@@ -3,6 +3,7 @@ package ca.squall.motoguzzler;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -20,6 +21,8 @@ import java.math.BigDecimal;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String PREFERENCES_NAME = "FILLUP_PREFERENCES";
+    public static final String PREFERENCE_UNIT_NAME = "FILLUP_PREFERENCES_UNITS";
     private static final String TAG = "MainActivity";
     ListView fillupsListView;
     TextView avgTextView, changeTextView;
@@ -65,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         SettingsDialogFragment frag = new SettingsDialogFragment();
         frag.setContext(this);
+
+        frag.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                notifyDataSetChanged();
+            }
+        });
+
         frag.show(ft, "txn_tag");
     }
 
@@ -73,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         mListAdapter.addAll(Fillup.listAll());
         mListAdapter.notifyDataSetChanged();
 
-        avgTextView.setText(Fillup.getAvgFuelEconomy() + " km/l");
+        avgTextView.setText(convertMileage(Fillup.getAvgFuelEconomy()));
 
         BigDecimal change = Fillup.getFuelEconomyChange();
         changeTextView.setTextColor(Color.BLACK);
@@ -84,8 +95,22 @@ public class MainActivity extends AppCompatActivity {
         if (change.compareTo(BigDecimal.ZERO) < 0) {
             changeTextView.setTextColor(Color.parseColor("#880000"));
         }
-        changeTextView.setText(change + " km/l");
+        changeTextView.setText(convertMileage(change));
 
+    }
+
+    private String convertMileage(BigDecimal change) {
+        String units = getUnitPreference();
+
+        if (units.equals("Metric")) {
+            return change + " km/l";
+        }
+
+        if (units.equals("Imperial")) {
+            return UnitConverter.convert(change, UnitConverter.UNIT_MPG) + " mpg";
+        }
+
+        return "ERR";
     }
 
 
@@ -154,5 +179,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setUnitPreferences(String unitName) {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_NAME, 0);
+        String units = settings.getString(PREFERENCE_UNIT_NAME, "Metric");
+
+        if (unitName.equals(units)) {
+            return;
+        }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(PREFERENCE_UNIT_NAME, unitName);
+        editor.commit();
+    }
+
+    public String getUnitPreference() {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_NAME, 0);
+        return settings.getString(PREFERENCE_UNIT_NAME, "Metric");
     }
 }

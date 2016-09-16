@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -18,10 +19,12 @@ public class FillupArrayAdapter extends ArrayAdapter<Fillup> {
 
     private static final String TAG = "FillupArrayAdapter";
     private final List<Fillup> fillups;
+    private MainActivity activity;
 
     public FillupArrayAdapter(Context context, List<Fillup> fillups) {
         super(context, 0, fillups);
         this.fillups = fillups;
+        this.activity = (MainActivity) context;
     }
 
     @Override
@@ -37,9 +40,9 @@ public class FillupArrayAdapter extends ArrayAdapter<Fillup> {
 
         Fillup fillup = fillups.get(position);
         costTextView.setText("$" + fillup.getCost());
-        amountTextView.setText("" + fillup.getAmount() + "l");
-        odometerTextView.setText(fillup.getOdometer() + " km");
-        fuelEconomyTextView.setText(fillup.getFuelEconomy().toPlainString());
+        amountTextView.setText(convertedAmount(fillup));
+        odometerTextView.setText(convertedDistance(fillup));
+        fuelEconomyTextView.setText(convertedMileage(fillup));
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yy", Locale.CANADA);
         dateTextView.setText(simpleDateFormat.format(fillup.getDate()));
@@ -50,4 +53,48 @@ public class FillupArrayAdapter extends ArrayAdapter<Fillup> {
 
         return fillUpView;
     }
+
+    private String convertedDistance(Fillup fillup) {
+        String unitPreference = activity.getUnitPreference();
+
+        if (unitPreference.equals("Metric")) {
+            return fillup.getOdometer() + " km";
+        }
+
+        if (unitPreference.equals("Imperial")) {
+            return UnitConverter.convert(new BigDecimal(fillup.getOdometer()), UnitConverter.UNIT_M).setScale(0, BigDecimal.ROUND_FLOOR) + " miles";
+        }
+
+        return "ERR";
+
+    }
+
+    private String convertedAmount(Fillup fillup) {
+        String unitPreference = activity.getUnitPreference();
+
+        if (unitPreference.equals("Metric")) {
+            return fillup.getAmount() + " l";
+        }
+
+        if (unitPreference.equals("Imperial")) {
+            return UnitConverter.convert(fillup.getAmount(), UnitConverter.UNIT_G) + " gallons";
+        }
+
+        return "ERR";
+    }
+
+    private String convertedMileage(Fillup fillup) {
+        String unitPreference = activity.getUnitPreference();
+
+        if (unitPreference.equals("Metric")) {
+            return fillup.getFuelEconomy() + " km/l";
+        }
+
+        if (unitPreference.equals("Imperial")) {
+            return UnitConverter.convert(fillup.getFuelEconomy(), UnitConverter.UNIT_MPG) + " mpg";
+        }
+
+        return "ERR";
+    }
+
 }

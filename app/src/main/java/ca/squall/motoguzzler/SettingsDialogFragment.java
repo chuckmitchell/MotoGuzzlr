@@ -2,30 +2,26 @@ package ca.squall.motoguzzler;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.DialogPreference;
+import android.support.v7.widget.AppCompatTextView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Switch;
 
 /**
  * Created by charles on 2016-09-16.
  */
 
-public class SettingsDialogFragment extends DialogFragment implements View.OnClickListener {
+public class SettingsDialogFragment extends DialogFragment implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     private final String TAG = "FillupDialogFragment";
+    MainActivity context;
     private DialogInterface.OnDismissListener onDismissListener;
-
-    Context context;
 
     @Override
     public void onStart() {
@@ -48,7 +44,18 @@ public class SettingsDialogFragment extends DialogFragment implements View.OnCli
         unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         unitSpinner.setAdapter(unitAdapter);
 
+        unitSpinner.setOnItemSelectedListener(this);
+
+        String unitPreference = context.getUnitPreference();
+        int position = unitAdapter.getPosition(unitPreference);
+        unitSpinner.setSelection(position);
+
+
         return root;
+    }
+
+    public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
+        this.onDismissListener = onDismissListener;
     }
 
     @Override
@@ -56,7 +63,7 @@ public class SettingsDialogFragment extends DialogFragment implements View.OnCli
 
     }
 
-    public void setContext(Context context) {
+    public void setContext(MainActivity context) {
         this.context = context;
     }
 
@@ -68,6 +75,16 @@ public class SettingsDialogFragment extends DialogFragment implements View.OnCli
         }
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        Log.d(TAG, "Unit item Selected");
 
+        String choice = ((AppCompatTextView) (view)).getText().toString();
+        context.setUnitPreferences(choice);
+    }
 
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+        Log.d(TAG, "Unit item nothing Selected");
+    }
 }
